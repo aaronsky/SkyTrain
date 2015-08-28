@@ -81,9 +81,10 @@ MyDemoGame::MyDemoGame(HINSTANCE hInstance)
 // --------------------------------------------------------
 MyDemoGame::~MyDemoGame()
 {
-	// Release any D3D stuff that's still hanging out
-	ReleaseMacro(vertexBuffer);
-	ReleaseMacro(indexBuffer);
+	// Delete our meshes
+	delete mesh1;
+	delete mesh2;
+	delete mesh3;
 
 	// Delete our simple shaders
 	delete vertexShader;
@@ -146,50 +147,11 @@ void MyDemoGame::CreateGeometry()
 	// - Indices are technically not required if the vertices are in the buffer 
 	//    in the correct order and each one will be used exactly once
 	// - But just to see how it's done...
-	int indices[] = { 0, 1, 2 };
+	unsigned int indices[] = { 0, 1, 2 };
 
-
-	// Create the VERTEX BUFFER description -----------------------------------
-	// - The description is created on the stack because we only need
-	//    it to create the buffer.  The description is then useless.
-	D3D11_BUFFER_DESC vbd;
-    vbd.Usage				= D3D11_USAGE_IMMUTABLE;
-    vbd.ByteWidth			= sizeof(Vertex) * 3;       // 3 = number of vertices in the buffer
-    vbd.BindFlags			= D3D11_BIND_VERTEX_BUFFER; // Tells DirectX this is a vertex buffer
-    vbd.CPUAccessFlags		= 0;
-    vbd.MiscFlags			= 0;
-	vbd.StructureByteStride	= 0;
-
-	// Create the proper struct to hold the initial vertex data
-	// - This is how we put the initial data into the buffer
-    D3D11_SUBRESOURCE_DATA initialVertexData;
-    initialVertexData.pSysMem = vertices;
-
-	// Actually create the buffer with the initial data
-	// - Once we do this, we'll NEVER CHANGE THE BUFFER AGAIN
-    HR(device->CreateBuffer(&vbd, &initialVertexData, &vertexBuffer));
-
-	
-
-	// Create the INDEX BUFFER description ------------------------------------
-	// - The description is created on the stack because we only need
-	//    it to create the buffer.  The description is then useless.
-	D3D11_BUFFER_DESC ibd;
-	ibd.Usage               = D3D11_USAGE_IMMUTABLE;
-	ibd.ByteWidth           = sizeof(int) * 3;         // 3 = number of indices in the buffer
-	ibd.BindFlags           = D3D11_BIND_INDEX_BUFFER; // Tells DirectX this is an index buffer
-	ibd.CPUAccessFlags      = 0;
-	ibd.MiscFlags           = 0;
-	ibd.StructureByteStride = 0;
-
-	// Create the proper struct to hold the initial index data
-	// - This is how we put the initial data into the buffer
-	D3D11_SUBRESOURCE_DATA initialIndexData;
-	initialIndexData.pSysMem = indices;
-
-	// Actually create the buffer with the initial data
-	// - Once we do this, we'll NEVER CHANGE THE BUFFER AGAIN
-	HR(device->CreateBuffer(&ibd, &initialIndexData, &indexBuffer));
+	mesh1 = new Mesh(vertices, 3, indices, 3, device);
+	mesh2 = new Mesh(vertices, 3, indices, 3, device);
+	mesh3 = new Mesh(vertices, 3, indices, 3, device);
 }
 
 // --------------------------------------------------------
@@ -320,9 +282,22 @@ void MyDemoGame::DrawScene(float deltaTime, float totalTime)
 	//    have different geometry.
 	UINT stride = sizeof(Vertex);
 	UINT offset = 0;
-	deviceContext->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
-	deviceContext->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
+	ID3D11Buffer* vBuffer = mesh1->GetVertexBuffer();
+	deviceContext->IASetVertexBuffers(0, 1, &vBuffer, &stride, &offset);
+	deviceContext->IASetIndexBuffer(mesh1->GetIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
+	deviceContext->DrawIndexed(mesh1->GetIndexCount(), 0, 0);
+
+	vBuffer = mesh2->GetVertexBuffer();
+	deviceContext->IASetVertexBuffers(0, 1, &vBuffer, &stride, &offset);
+	deviceContext->IASetIndexBuffer(mesh2->GetIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
+	deviceContext->DrawIndexed(mesh1->GetIndexCount(), 0, 0);
+
+	vBuffer = mesh3->GetVertexBuffer();
+	deviceContext->IASetVertexBuffers(0, 1, &vBuffer, &stride, &offset);
+	deviceContext->IASetIndexBuffer(mesh3->GetIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
+	deviceContext->DrawIndexed(mesh1->GetIndexCount(),0,0);
 	
+	/*
 	// Finally do the actual drawing
 	//  - Do this ONCE PER OBJECT you intend to draw
 	//  - This will use all of the currently set DirectX "stuff" (shaders, buffers, etc)
@@ -332,7 +307,7 @@ void MyDemoGame::DrawScene(float deltaTime, float totalTime)
 		3,     // The number of indices to use (we could draw a subset if we wanted)
 		0,     // Offset to the first index we want to use
 		0);    // Offset to add to each index when looking up vertices
-
+	*/
 
 	// Present the buffer
 	//  - Puts the image we're drawing into the window so the user can see it

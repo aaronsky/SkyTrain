@@ -1,7 +1,6 @@
 #pragma once
 
-#include <DirectXMath.h>
-#include "DirectXGameCore.h"
+#include "Mesh.h"
 #include "SimpleShader.h"
 
 // Include run-time memory checking in debug builds, so 
@@ -40,9 +39,9 @@ private:
 	void CreateMatrices();
 
 private:
-	// Buffers to hold actual geometry data
-	ID3D11Buffer* vertexBuffer;
-	ID3D11Buffer* indexBuffer;
+	Mesh* mesh1;
+	Mesh* mesh2;
+	Mesh* mesh3;
 
 	// Wrappers for DirectX shaders to provide simplified functionality
 	SimpleVertexShader* vertexShader;
