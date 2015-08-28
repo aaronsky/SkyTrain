@@ -83,8 +83,8 @@ MyDemoGame::~MyDemoGame()
 {
 	// Delete our meshes
 	delete mesh1;
-	delete mesh2;
-	delete mesh3;
+	//delete mesh2;
+	//delete mesh3;
 
 	// Delete our simple shaders
 	delete vertexShader;
@@ -150,8 +150,8 @@ void MyDemoGame::CreateGeometry()
 	unsigned int indices[] = { 0, 1, 2 };
 
 	mesh1 = new Mesh(vertices, 3, indices, 3, device);
-	mesh2 = new Mesh(vertices, 3, indices, 3, device);
-	mesh3 = new Mesh(vertices, 3, indices, 3, device);
+	//mesh2 = new Mesh(vertices, 3, indices, 3, device);
+	//mesh3 = new Mesh(vertices, 3, indices, 3, device);
 }
 
 // --------------------------------------------------------
@@ -287,7 +287,7 @@ void MyDemoGame::DrawScene(float deltaTime, float totalTime)
 	deviceContext->IASetIndexBuffer(mesh1->GetIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
 	deviceContext->DrawIndexed(mesh1->GetIndexCount(), 0, 0);
 
-	vBuffer = mesh2->GetVertexBuffer();
+	/*vBuffer = mesh2->GetVertexBuffer();
 	deviceContext->IASetVertexBuffers(0, 1, &vBuffer, &stride, &offset);
 	deviceContext->IASetIndexBuffer(mesh2->GetIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
 	deviceContext->DrawIndexed(mesh1->GetIndexCount(), 0, 0);
@@ -295,7 +295,7 @@ void MyDemoGame::DrawScene(float deltaTime, float totalTime)
 	vBuffer = mesh3->GetVertexBuffer();
 	deviceContext->IASetVertexBuffers(0, 1, &vBuffer, &stride, &offset);
 	deviceContext->IASetIndexBuffer(mesh3->GetIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
-	deviceContext->DrawIndexed(mesh1->GetIndexCount(),0,0);
+	deviceContext->DrawIndexed(mesh1->GetIndexCount(),0,0);*/
 	
 	/*
 	// Finally do the actual drawing
