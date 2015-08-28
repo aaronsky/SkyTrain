@@ -31,8 +31,8 @@ Mesh::Mesh(Vertex * vertices, int vertexCount, unsigned int * indices, int index
 
 Mesh::~Mesh()
 {
-	vBuffer->Release();
-	iBuffer->Release();
+	ReleaseMacro(vBuffer);
+	ReleaseMacro(iBuffer);
 }
 
 ID3D11Buffer* Mesh::GetVertexBuffer()
