@@ -33,21 +33,21 @@ using namespace DirectX;
 // Win32 Entry Point - Where your program starts
 // --------------------------------------------------------
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance,
-				   PSTR cmdLine, int showCmd)
+	PSTR cmdLine, int showCmd)
 {
 	// Enable run-time memory check for debug builds.
 #if defined(DEBUG) | defined(_DEBUG)
-	_CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
+	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 
 	// Create the game object.
 	MyDemoGame game(hInstance);
-	
+
 	// This is where we'll create the window, initialize DirectX, 
 	// set up geometry and shaders, etc.
-	if( !game.Init() )
+	if (!game.Init())
 		return 0;
-	
+
 	// All set to run the game loop
 	return game.Run();
 }
@@ -59,7 +59,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance,
 // Base class constructor will set up all of the underlying
 // fields, and then we can overwrite any that we'd like
 // --------------------------------------------------------
-MyDemoGame::MyDemoGame(HINSTANCE hInstance) 
+MyDemoGame::MyDemoGame(HINSTANCE hInstance)
 	: DirectXGameCore(hInstance)
 {
 	// Set up a custom caption for the game window.
@@ -83,8 +83,8 @@ MyDemoGame::~MyDemoGame()
 {
 	// Delete our meshes
 	delete mesh1;
-	//delete mesh2;
-	//delete mesh3;
+	delete mesh2;
+	delete mesh3;
 
 	// Delete our simple shaders
 	delete vertexShader;
@@ -103,7 +103,7 @@ bool MyDemoGame::Init()
 {
 	// Call the base class's Init() method to create the window,
 	// initialize DirectX, etc.
-	if( !DirectXGameCore::Init() )
+	if (!DirectXGameCore::Init())
 		return false;
 
 	// Helper methods to create something to draw, load shaders to draw it 
@@ -128,30 +128,50 @@ void MyDemoGame::CreateGeometry()
 {
 	// Create some temporary variables to represent colors
 	// - Not necessary, just makes things more readable
-	XMFLOAT4 red	= XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
-	XMFLOAT4 green	= XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
-	XMFLOAT4 blue	= XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
+	XMFLOAT4 red = XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
+	XMFLOAT4 green = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
+	XMFLOAT4 blue = XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
 
 	// Set up the vertices of the triangle we would like to draw
 	// - We're going to copy this array, exactly as it exists in memory
 	//    over to a DirectX-controlled data structure (the vertex buffer)
-	Vertex vertices[] = 
+	Vertex triangleVertices[] =
+	{
+		{ XMFLOAT3(+1.0f, -1.0f, +0.0f), red },
+		{ XMFLOAT3(+2.0f, +0.0f, +0.0f), blue },
+		{ XMFLOAT3(+1.5f, -1.5f, +0.0f), green },
+	};
+
+	Vertex squareVertices[] =
+	{
+		{ XMFLOAT3(-6.0f, -4.0f, +10.0f), green },
+		{ XMFLOAT3(-4.0f, -4.0f, +10.0f), blue },
+		{ XMFLOAT3(-4.0f, -6.0f, +10.0f), green },
+		{ XMFLOAT3(-6.0f, -6.0f, +10.0f), blue }
+	};
+
+	Vertex pentagonVertices[] =
 	{
 		{ XMFLOAT3(+0.0f, +1.0f, +0.0f), red },
-		{ XMFLOAT3(+1.5f, -1.0f, +0.0f), blue },
-		{ XMFLOAT3(-1.5f, -1.0f, +0.0f), green },
+		{ XMFLOAT3(+0.0f, +0.0f, +0.0f), blue },
+		{ XMFLOAT3(-0.951057f, +0.309017f, +0.0f), red },
+		{ XMFLOAT3(-0.587785f, -0.809017f, +0.0f), red },
+		{ XMFLOAT3(+0.587785f, -0.809017f, +0.0f), red },
+		{ XMFLOAT3(+0.951057f, +0.309017f, +0.0f), red }
 	};
-	
+
 	// Set up the indices, which tell us which vertices to use and in which order
 	// - This is somewhat redundant for just 3 vertices (it's a simple example)
 	// - Indices are technically not required if the vertices are in the buffer 
 	//    in the correct order and each one will be used exactly once
 	// - But just to see how it's done...
 	unsigned int indices[] = { 0, 1, 2 };
+	unsigned int squareIndices[] = { 0, 1, 2, 0, 2, 3 };
+	unsigned int pentagonIndices[] = { 0, 1, 2, 2, 1, 3, 1, 4, 3, 1, 5, 4, 0, 5, 1 };
 
-	mesh1 = new Mesh(vertices, 3, indices, 3, device);
-	//mesh2 = new Mesh(vertices, 3, indices, 3, device);
-	//mesh3 = new Mesh(vertices, 3, indices, 3, device);
+	mesh1 = new Mesh(triangleVertices, 3, indices, 3, device);
+	mesh2 = new Mesh(squareVertices, 4, squareIndices, 6, device);
+	mesh3 = new Mesh(pentagonVertices, 6, pentagonIndices, 15, device);
 }
 
 // --------------------------------------------------------
@@ -189,8 +209,8 @@ void MyDemoGame::CreateMatrices()
 	//    point in 3D space
 	XMVECTOR pos = XMVectorSet(0, 0, -5, 0);
 	XMVECTOR dir = XMVectorSet(0, 0, 1, 0);
-	XMVECTOR up  = XMVectorSet(0, 1, 0, 0);
-	XMMATRIX V   = XMMatrixLookToLH(
+	XMVECTOR up = XMVectorSet(0, 1, 0, 0);
+	XMMATRIX V = XMMatrixLookToLH(
 		pos,     // The position of the "camera"
 		dir,     // Direction the camera is looking
 		up);     // "Up" direction in 3D space (prevents roll)
@@ -248,14 +268,14 @@ void MyDemoGame::UpdateScene(float deltaTime, float totalTime)
 void MyDemoGame::DrawScene(float deltaTime, float totalTime)
 {
 	// Background color (Cornflower Blue in this case) for clearing
-	const float color[4] = {0.4f, 0.6f, 0.75f, 0.0f};
+	const float color[4] = { 0.4f, 0.6f, 0.75f, 0.0f };
 
 	// Clear the render target and depth buffer (erases what's on the screen)
 	//  - Do this ONCE PER FRAME
 	//  - At the beginning of DrawScene (before drawing *anything*)
 	deviceContext->ClearRenderTargetView(renderTargetView, color);
 	deviceContext->ClearDepthStencilView(
-		depthStencilView, 
+		depthStencilView,
 		D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
 		1.0f,
 		0);
@@ -269,45 +289,17 @@ void MyDemoGame::DrawScene(float deltaTime, float totalTime)
 	vertexShader->SetMatrix4x4("world", worldMatrix);
 	vertexShader->SetMatrix4x4("view", viewMatrix);
 	vertexShader->SetMatrix4x4("projection", projectionMatrix);
-	
+
 	// Set the vertex and pixel shaders to use for the next Draw() command
 	//  - These don't technically need to be set every frame...YET
 	//  - Once you start applying different shaders to different objects,
 	//    you'll need to swap the current shaders before each draw
 	vertexShader->SetShader(true);
 	pixelShader->SetShader(true);
-	
-	// Set buffers in the input assembler
-	//  - Do this ONCE PER OBJECT you're drawing, since each object might
-	//    have different geometry.
-	UINT stride = sizeof(Vertex);
-	UINT offset = 0;
-	ID3D11Buffer* vBuffer = mesh1->GetVertexBuffer();
-	deviceContext->IASetVertexBuffers(0, 1, &vBuffer, &stride, &offset);
-	deviceContext->IASetIndexBuffer(mesh1->GetIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
-	deviceContext->DrawIndexed(mesh1->GetIndexCount(), 0, 0);
 
-	/*vBuffer = mesh2->GetVertexBuffer();
-	deviceContext->IASetVertexBuffers(0, 1, &vBuffer, &stride, &offset);
-	deviceContext->IASetIndexBuffer(mesh2->GetIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
-	deviceContext->DrawIndexed(mesh1->GetIndexCount(), 0, 0);
-
-	vBuffer = mesh3->GetVertexBuffer();
-	deviceContext->IASetVertexBuffers(0, 1, &vBuffer, &stride, &offset);
-	deviceContext->IASetIndexBuffer(mesh3->GetIndexBuffer(), DXGI_FORMAT_R32_UINT, 0);
-	deviceContext->DrawIndexed(mesh1->GetIndexCount(),0,0);*/
-	
-	/*
-	// Finally do the actual drawing
-	//  - Do this ONCE PER OBJECT you intend to draw
-	//  - This will use all of the currently set DirectX "stuff" (shaders, buffers, etc)
-	//  - DrawIndexed() uses the currently set INDEX BUFFER to look up corresponding
-	//     vertices in the currently set VERTEX BUFFER
-	deviceContext->DrawIndexed(
-		3,     // The number of indices to use (we could draw a subset if we wanted)
-		0,     // Offset to the first index we want to use
-		0);    // Offset to add to each index when looking up vertices
-	*/
+	mesh1->Draw(deviceContext);
+	mesh2->Draw(deviceContext);
+	mesh3->Draw(deviceContext);
 
 	// Present the buffer
 	//  - Puts the image we're drawing into the window so the user can see it
