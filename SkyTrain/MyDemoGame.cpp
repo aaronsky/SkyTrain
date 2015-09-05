@@ -81,14 +81,6 @@ MyDemoGame::MyDemoGame(HINSTANCE hInstance)
 // --------------------------------------------------------
 MyDemoGame::~MyDemoGame()
 {
-	// Delete our meshes
-	delete mesh1;
-	delete mesh2;
-	delete mesh3;
-
-	// Delete our simple shaders
-	delete vertexShader;
-	delete pixelShader;
 }
 
 #pragma endregion
@@ -286,16 +278,11 @@ void MyDemoGame::DrawScene(float deltaTime, float totalTime)
 	//  - This is actually a complex process of copying data to a local buffer
 	//    and then copying that entire buffer to the GPU.  
 	//  - The "SimpleShader" class handles all of that for you.
-	vertexShader->SetMatrix4x4("world", worldMatrix);
-	vertexShader->SetMatrix4x4("view", viewMatrix);
-	vertexShader->SetMatrix4x4("projection", projectionMatrix);
 
 	// Set the vertex and pixel shaders to use for the next Draw() command
 	//  - These don't technically need to be set every frame...YET
 	//  - Once you start applying different shaders to different objects,
 	//    you'll need to swap the current shaders before each draw
-	vertexShader->SetShader(true);
-	pixelShader->SetShader(true);
 
 	mesh1->Draw(deviceContext);
 	mesh2->Draw(deviceContext);

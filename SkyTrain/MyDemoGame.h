@@ -1,7 +1,6 @@
 #pragma once
 
-#include "Mesh.h"
-#include "SimpleShader.h"
+#include "Entity.h"
 
 // Include run-time memory checking in debug builds, so 
 // we can be notified of memory leaks
@@ -39,19 +38,6 @@ private:
 	void CreateMatrices();
 
 private:
-	Mesh* mesh1;
-	Mesh* mesh2;
-	Mesh* mesh3;
-
-	// Wrappers for DirectX shaders to provide simplified functionality
-	SimpleVertexShader* vertexShader;
-	SimplePixelShader* pixelShader;
-
-	// The matrices to go from model space to screen space
-	DirectX::XMFLOAT4X4 worldMatrix;
-	DirectX::XMFLOAT4X4 viewMatrix;
-	DirectX::XMFLOAT4X4 projectionMatrix;
-
 	// Keeps track of the old mouse position.  Useful for 
 	// determining how far the mouse moved in a single frame.
 	POINT prevMousePos;
