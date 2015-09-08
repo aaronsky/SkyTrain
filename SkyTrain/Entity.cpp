@@ -1,78 +1,64 @@
 #include "Entity.h"
 
+using namespace DirectX;
 
-
-Entity::Entity(Mesh * mesh, DirectX::XMFLOAT3 position, DirectX::XMFLOAT3 rotation, DirectX::XMFLOAT3 scale)
+Entity::Entity(Mesh * _mesh, XMFLOAT3 _position, XMFLOAT3 _rotation, XMFLOAT3 _scale, ID3D11Device* _device, ID3D11DeviceContext* _deviceContext)
 {
-	this->mesh = mesh;
-	this->position = position;
-	this->rotation = rotation;
-	this->scale = scale;
+	this->mesh = _mesh;
+	this->material = new Material(_device, _deviceContext, L"VertexShader.cso", L"PixelShader.cso");
+	this->position = _position;
+	this->rotation = _rotation;
+	this->scale = _scale;
+
+	XMMATRIX W = XMMatrixIdentity();
+	XMStoreFloat4x4(&worldMatrix, XMMatrixTranspose(W));
 }
 
 Entity::~Entity()
 {
+	delete mesh;
+	delete material;
 }
 
 #pragma region Getters
-DirectX::XMFLOAT4X4 Entity::GetWorldMatrix()
+XMFLOAT4X4 Entity::GetWorldMatrix()
 {
 	return this->worldMatrix;
 }
 
-DirectX::XMFLOAT4X4 Entity::GetViewMatrix()
-{
-	return this->viewMatrix;
-}
-
-DirectX::XMFLOAT4X4 Entity::GetProjectionMatrix()
-{
-	return this->projectionMatrix;
-}
-
-DirectX::XMFLOAT3 Entity::GetPosition()
+XMFLOAT3 Entity::GetPosition()
 {
 	return this->position;
 }
 
-DirectX::XMFLOAT3 Entity::GetRotation()
+XMFLOAT3 Entity::GetRotation()
 {
 	return this->rotation;
 }
 
-DirectX::XMFLOAT3 Entity::GetScale()
+XMFLOAT3 Entity::GetScale()
 {
 	return this->scale;
 }
 #pragma endregion Getters
 
 #pragma region Setters
-void Entity::SetWorldMatrix(DirectX::XMFLOAT4X4 newWorld)
+void Entity::SetWorldMatrix(XMFLOAT4X4 newWorld)
 {
 	this->worldMatrix = newWorld;
 }
 
-void Entity::SetViewMatrix(DirectX::XMFLOAT4X4 newView)
-{
-	this->viewMatrix = newView;
-}
-
-void Entity::SetProjectionMatrix(DirectX::XMFLOAT4X4 newProjection)
-{
-	this->projectionMatrix = newProjection;
-}
-
-void Entity::SetPosition(DirectX::XMFLOAT3 newPosition)
+void Entity::SetPosition(XMFLOAT3 newPosition)
 {
 	this->position = newPosition;
 }
 
-void Entity::SetRotation(DirectX::XMFLOAT3 newRotation)
+void Entity::SetRotation(XMFLOAT3 newRotation)
 {
 	this->rotation = newRotation;
 }
 
-void Entity::SetScale(DirectX::XMFLOAT3 newScale)
+void Entity::SetScale(XMFLOAT3 newScale)
 {
 	this->scale = newScale;
 }
@@ -131,11 +117,11 @@ void Entity::ScaleZ(float z)
 
 void Entity::Update()
 {
-
+	RotateX(0.5f);
 }
 
-void Entity::Draw(ID3D11DeviceContext * context)
+void Entity::Draw(ID3D11DeviceContext * context, DirectX::XMFLOAT4X4 view, DirectX::XMFLOAT4X4 projection)
 {
-	this->material->SetShader(worldMatrix, viewMatrix, projectionMatrix);
-
+	this->material->SetShader(worldMatrix, view, projection);
+	this->mesh->Draw(context);
 }

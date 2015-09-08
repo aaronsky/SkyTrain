@@ -81,6 +81,9 @@ MyDemoGame::MyDemoGame(HINSTANCE hInstance)
 // --------------------------------------------------------
 MyDemoGame::~MyDemoGame()
 {
+	delete entity1;
+	delete entity2;
+	delete entity3;
 }
 
 #pragma endregion
@@ -97,128 +100,28 @@ bool MyDemoGame::Init()
 	// initialize DirectX, etc.
 	if (!DirectXGameCore::Init())
 		return false;
-
-	// Helper methods to create something to draw, load shaders to draw it 
-	// with and set up matrices so we can see how to pass data to the GPU.
-	//  - For your own projects, feel free to expand/replace these.
-	CreateGeometry();
-	LoadShaders();
-	CreateMatrices();
-
+	
 	// Tell the input assembler stage of the pipeline what kind of
 	// geometric primitives we'll be using and how to interpret them
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	Mesh::InitGeometry(device);
+
+	entity1 = new Entity(Mesh::TRIANGLE, XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(1, 1, 1), device, deviceContext);
+	entity2 = new Entity(Mesh::QUAD, XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(1, 1, 1), device, deviceContext);
+	entity3 = new Entity(Mesh::PENTAGON, XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(1, 1, 1), device, deviceContext);
+
+	XMVECTOR pos = XMVectorSet(0, 0, -5, 0);
+	XMVECTOR dir = XMVectorSet(0, 0, 1, 0);
+	XMVECTOR up = XMVectorSet(0, 1, 0, 0);
+	XMMATRIX V = XMMatrixLookToLH(pos, dir, up);
+	XMStoreFloat4x4(&viewMatrix, XMMatrixTranspose(V));
+
+	XMMATRIX P = XMMatrixPerspectiveFovLH(0.25f * 3.1415926535f, aspectRatio, 0.1f, 100.0f);
+	XMStoreFloat4x4(&projectionMatrix, XMMatrixTranspose(P));
 
 	// Successfully initialized
 	return true;
 }
-
-// --------------------------------------------------------
-// Creates the geometry we're going to draw - a single triangle for now
-// --------------------------------------------------------
-void MyDemoGame::CreateGeometry()
-{
-	// Create some temporary variables to represent colors
-	// - Not necessary, just makes things more readable
-	XMFLOAT4 red = XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f);
-	XMFLOAT4 green = XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f);
-	XMFLOAT4 blue = XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f);
-
-	// Set up the vertices of the triangle we would like to draw
-	// - We're going to copy this array, exactly as it exists in memory
-	//    over to a DirectX-controlled data structure (the vertex buffer)
-	Vertex triangleVertices[] =
-	{
-		{ XMFLOAT3(+1.0f, -1.0f, +0.0f), red },
-		{ XMFLOAT3(+2.0f, +0.0f, +0.0f), blue },
-		{ XMFLOAT3(+1.5f, -1.5f, +0.0f), green },
-	};
-
-	Vertex squareVertices[] =
-	{
-		{ XMFLOAT3(-6.0f, -4.0f, +10.0f), green },
-		{ XMFLOAT3(-4.0f, -4.0f, +10.0f), blue },
-		{ XMFLOAT3(-4.0f, -6.0f, +10.0f), green },
-		{ XMFLOAT3(-6.0f, -6.0f, +10.0f), blue }
-	};
-
-	Vertex pentagonVertices[] =
-	{
-		{ XMFLOAT3(+0.0f, +1.0f, +0.0f), red },
-		{ XMFLOAT3(+0.0f, +0.0f, +0.0f), blue },
-		{ XMFLOAT3(-0.951057f, +0.309017f, +0.0f), red },
-		{ XMFLOAT3(-0.587785f, -0.809017f, +0.0f), red },
-		{ XMFLOAT3(+0.587785f, -0.809017f, +0.0f), red },
-		{ XMFLOAT3(+0.951057f, +0.309017f, +0.0f), red }
-	};
-
-	// Set up the indices, which tell us which vertices to use and in which order
-	// - This is somewhat redundant for just 3 vertices (it's a simple example)
-	// - Indices are technically not required if the vertices are in the buffer 
-	//    in the correct order and each one will be used exactly once
-	// - But just to see how it's done...
-	unsigned int indices[] = { 0, 1, 2 };
-	unsigned int squareIndices[] = { 0, 1, 2, 0, 2, 3 };
-	unsigned int pentagonIndices[] = { 0, 1, 2, 2, 1, 3, 1, 4, 3, 1, 5, 4, 0, 5, 1 };
-
-	mesh1 = new Mesh(triangleVertices, 3, indices, 3, device);
-	mesh2 = new Mesh(squareVertices, 4, squareIndices, 6, device);
-	mesh3 = new Mesh(pentagonVertices, 6, pentagonIndices, 15, device);
-}
-
-// --------------------------------------------------------
-// Loads shaders from compiled shader object (.cso) files
-// - These simple shaders provide helpful methods for sending
-//   data to individual variables on the GPU
-// --------------------------------------------------------
-void MyDemoGame::LoadShaders()
-{
-	vertexShader = new SimpleVertexShader(device, deviceContext);
-	vertexShader->LoadShaderFile(L"VertexShader.cso");
-
-	pixelShader = new SimplePixelShader(device, deviceContext);
-	pixelShader->LoadShaderFile(L"PixelShader.cso");
-}
-
-// --------------------------------------------------------
-// Initializes the matrices necessary to represent our geometry's 
-// transformations and our 3D camera
-// --------------------------------------------------------
-void MyDemoGame::CreateMatrices()
-{
-	// Set up world matrix
-	// - In an actual game, each object will need one of these and they should
-	//   update when/if the object moves (every frame)
-	XMMATRIX W = XMMatrixIdentity();
-	XMStoreFloat4x4(&worldMatrix, XMMatrixTranspose(W)); // Transpose for HLSL!
-
-	// Create the View matrix
-	// - In an actual game, recreate this matrix when the camera 
-	//    moves (potentially every frame)
-	// - We're using the LOOK TO function, which takes the position of the
-	//    camera and the direction you want it to look (as well as "up")
-	// - Another option is the LOOK AT function, to look towards a specific
-	//    point in 3D space
-	XMVECTOR pos = XMVectorSet(0, 0, -5, 0);
-	XMVECTOR dir = XMVectorSet(0, 0, 1, 0);
-	XMVECTOR up = XMVectorSet(0, 1, 0, 0);
-	XMMATRIX V = XMMatrixLookToLH(
-		pos,     // The position of the "camera"
-		dir,     // Direction the camera is looking
-		up);     // "Up" direction in 3D space (prevents roll)
-	XMStoreFloat4x4(&viewMatrix, XMMatrixTranspose(V)); // Transpose for HLSL!
-
-	// Create the Projection matrix
-	// - This should match the window's aspect ratio, and also update anytime
-	//   the window resizes (which is already happening in OnResize() below)
-	XMMATRIX P = XMMatrixPerspectiveFovLH(
-		0.25f * 3.1415926535f,		// Field of View Angle
-		aspectRatio,				// Aspect ratio
-		0.1f,						// Near clip plane distance
-		100.0f);					// Far clip plane distance
-	XMStoreFloat4x4(&projectionMatrix, XMMatrixTranspose(P)); // Transpose for HLSL!
-}
-
 #pragma endregion
 
 #pragma region Window Resizing
@@ -252,6 +155,9 @@ void MyDemoGame::UpdateScene(float deltaTime, float totalTime)
 	// Quit if the escape key is pressed
 	if (GetAsyncKeyState(VK_ESCAPE))
 		Quit();
+	entity1->Update();
+	entity2->Update();
+	entity3->Update();
 }
 
 // --------------------------------------------------------
@@ -271,22 +177,10 @@ void MyDemoGame::DrawScene(float deltaTime, float totalTime)
 		D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
 		1.0f,
 		0);
-
-
-	// Send data to shader variables
-	//  - Do this ONCE PER OBJECT you're drawing
-	//  - This is actually a complex process of copying data to a local buffer
-	//    and then copying that entire buffer to the GPU.  
-	//  - The "SimpleShader" class handles all of that for you.
-
-	// Set the vertex and pixel shaders to use for the next Draw() command
-	//  - These don't technically need to be set every frame...YET
-	//  - Once you start applying different shaders to different objects,
-	//    you'll need to swap the current shaders before each draw
-
-	mesh1->Draw(deviceContext);
-	mesh2->Draw(deviceContext);
-	mesh3->Draw(deviceContext);
+	
+	entity1->Draw(deviceContext, viewMatrix, projectionMatrix);
+	entity2->Draw(deviceContext, viewMatrix, projectionMatrix);
+	entity3->Draw(deviceContext, viewMatrix, projectionMatrix);
 
 	// Present the buffer
 	//  - Puts the image we're drawing into the window so the user can see it

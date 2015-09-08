@@ -376,6 +376,7 @@ void DirectXGameCore::UpdateTimer()
 
 	// Calculate total time
 	totalTime = (float)((currentTime - startTime) * perfCounterSeconds);
+	previousTime = currentTime;
 }
 
 // --------------------------------------------------------

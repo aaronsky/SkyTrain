@@ -4,12 +4,10 @@
 class Material
 {
 public:
-	Material();
+	Material(ID3D11Device* device, ID3D11DeviceContext* deviceContext, LPCWSTR vertexShaderPath, LPCWSTR pixelShaderPath);
 	~Material();
 	SimpleVertexShader* GetVertexShader();
 	SimplePixelShader* GetPixelShader();
-	void SetVertexShader(SimpleVertexShader* newVShader);
-	void SetPixelShader(SimplePixelShader* newPShader);
 	void SetShader(DirectX::XMFLOAT4X4 world, DirectX::XMFLOAT4X4 view, DirectX::XMFLOAT4X4 projection);
 private:
 	SimpleVertexShader* vertexShader;

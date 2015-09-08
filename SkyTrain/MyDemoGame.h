@@ -30,13 +30,11 @@ public:
 	void OnMouseMove(WPARAM btnState, int x, int y);
 
 private:
-	// Initialization for our "game" demo - Feel free to
-	// expand, alter, rename or remove these once you
-	// start doing something more advanced!
-	void CreateGeometry();
-	void LoadShaders();
-	void CreateMatrices();
-
+	DirectX::XMFLOAT4X4 viewMatrix;
+	DirectX::XMFLOAT4X4 projectionMatrix;
+	Entity* entity1;
+	Entity* entity2;
+	Entity* entity3;
 private:
 	// Keeps track of the old mouse position.  Useful for 
 	// determining how far the mouse moved in a single frame.

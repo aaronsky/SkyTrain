@@ -5,19 +5,15 @@
 class Entity
 {
 public:
-	Entity(Mesh* mesh, DirectX::XMFLOAT3 position, DirectX::XMFLOAT3 rotation, DirectX::XMFLOAT3 scale);
+	Entity(const Mesh* _mesh, DirectX::XMFLOAT3 _position, DirectX::XMFLOAT3 _rotation, DirectX::XMFLOAT3 _scale, ID3D11Device* _device, ID3D11DeviceContext* _deviceContext);
 	~Entity();
-	
+
 	DirectX::XMFLOAT4X4 GetWorldMatrix();
-	DirectX::XMFLOAT4X4 GetViewMatrix();
-	DirectX::XMFLOAT4X4 GetProjectionMatrix();
 	DirectX::XMFLOAT3 GetPosition();
 	DirectX::XMFLOAT3 GetRotation();
 	DirectX::XMFLOAT3 GetScale();
 
 	void SetWorldMatrix(DirectX::XMFLOAT4X4 newWorld);
-	void SetViewMatrix(DirectX::XMFLOAT4X4 newView);
-	void SetProjectionMatrix(DirectX::XMFLOAT4X4 newProjection);
 	void SetPosition(DirectX::XMFLOAT3 newPosition);
 	void SetRotation(DirectX::XMFLOAT3 newRotation);
 	void SetScale(DirectX::XMFLOAT3 newScale);
@@ -36,15 +32,13 @@ public:
 
 	virtual void Update();
 
-	void Draw(ID3D11DeviceContext* context);
+	void Draw(ID3D11DeviceContext* context, DirectX::XMFLOAT4X4 view, DirectX::XMFLOAT4X4 projection);
 private:
 	DirectX::XMFLOAT4X4 worldMatrix;
-		DirectX::XMFLOAT4X4 viewMatrix;
-		DirectX::XMFLOAT4X4 projectionMatrix;
-		DirectX::XMFLOAT3 position;
-		DirectX::XMFLOAT3 rotation;
-		DirectX::XMFLOAT3 scale;
-		Mesh* mesh;
-		Material* material;
+	DirectX::XMFLOAT3 position;
+	DirectX::XMFLOAT3 rotation;
+	DirectX::XMFLOAT3 scale;
+	Mesh* mesh;
+	Material* material;
 };
 
