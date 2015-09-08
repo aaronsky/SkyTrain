@@ -5,7 +5,7 @@
 class Entity
 {
 public:
-	Entity(const Mesh* _mesh, DirectX::XMFLOAT3 _position, DirectX::XMFLOAT3 _rotation, DirectX::XMFLOAT3 _scale, ID3D11Device* _device, ID3D11DeviceContext* _deviceContext);
+	Entity(Mesh* _mesh, DirectX::XMFLOAT3 _position, DirectX::XMFLOAT3 _rotation, DirectX::XMFLOAT3 _scale, ID3D11Device* _device, ID3D11DeviceContext* _deviceContext);
 	~Entity();
 
 	DirectX::XMFLOAT4X4 GetWorldMatrix();
@@ -30,7 +30,7 @@ public:
 	void ScaleY(float y);
 	void ScaleZ(float z);
 
-	virtual void Update();
+	virtual void Update(float deltaTime);
 
 	void Draw(ID3D11DeviceContext* context, DirectX::XMFLOAT4X4 view, DirectX::XMFLOAT4X4 projection);
 private:

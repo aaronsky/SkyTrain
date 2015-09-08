@@ -104,11 +104,10 @@ bool MyDemoGame::Init()
 	// Tell the input assembler stage of the pipeline what kind of
 	// geometric primitives we'll be using and how to interpret them
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	Mesh::InitGeometry(device);
 
-	entity1 = new Entity(Mesh::TRIANGLE, XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(1, 1, 1), device, deviceContext);
-	entity2 = new Entity(Mesh::QUAD, XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(1, 1, 1), device, deviceContext);
-	entity3 = new Entity(Mesh::PENTAGON, XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(1, 1, 1), device, deviceContext);
+	entity1 = new Entity(new Triangle(device), XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(1, 1, 1), device, deviceContext);
+	entity2 = new Entity(new Rect(device), XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(1, 1, 1), device, deviceContext);
+	entity3 = new Entity(new Pentagon(device), XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(1, 1, 1), device, deviceContext);
 
 	XMVECTOR pos = XMVectorSet(0, 0, -5, 0);
 	XMVECTOR dir = XMVectorSet(0, 0, 1, 0);
@@ -155,9 +154,9 @@ void MyDemoGame::UpdateScene(float deltaTime, float totalTime)
 	// Quit if the escape key is pressed
 	if (GetAsyncKeyState(VK_ESCAPE))
 		Quit();
-	entity1->Update();
-	entity2->Update();
-	entity3->Update();
+	entity1->Update(deltaTime);
+	entity2->Update(deltaTime);
+	entity3->Update(deltaTime);
 }
 
 // --------------------------------------------------------

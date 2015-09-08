@@ -81,7 +81,10 @@
     <ClCompile Include="MyDemoGame.cpp" />
     <ClCompile Include="dxerr.cpp" />
     <ClCompile Include="DirectXGameCore.cpp" />
+    <ClCompile Include="Pentagon.cpp" />
+    <ClCompile Include="Rect.cpp" />
     <ClCompile Include="SimpleShader.cpp" />
+    <ClCompile Include="Triangle.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Entity.h" />
@@ -90,7 +93,10 @@
     <ClInclude Include="MyDemoGame.h" />
     <ClInclude Include="dxerr.h" />
     <ClInclude Include="DirectXGameCore.h" />
+    <ClInclude Include="Pentagon.h" />
+    <ClInclude Include="Rect.h" />
     <ClInclude Include="SimpleShader.h" />
+    <ClInclude Include="Triangle.h" />
     <ClInclude Include="Vertex.h" />
   </ItemGroup>
   <ItemGroup>

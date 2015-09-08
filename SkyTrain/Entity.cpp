@@ -84,44 +84,51 @@ void Entity::TranslateZ(float z)
 #pragma region Rotate
 void Entity::RotateX(float x)
 {
-	this->position.x += x;
+	this->rotation.x += x;
 }
 
 void Entity::RotateY(float y)
 {
-	this->position.y += y;
+	this->rotation.y += y;
 }
 
 void Entity::RotateZ(float z)
 {
-	this->position.z += z;
+	this->rotation.z += z;
 }
 #pragma endregion Rotate
 
 #pragma region Scale
 void Entity::ScaleX(float x)
 {
-	this->position.x += x;
+	this->scale.x += x;
 }
 
 void Entity::ScaleY(float y)
 {
-	this->position.y += y;
+	this->scale.y += y;
 }
 
 void Entity::ScaleZ(float z)
 {
-	this->position.z += z;
+	this->scale.z += z;
 }
 #pragma endregion Scale
 
-void Entity::Update()
+void Entity::Update(float deltaTime)
 {
-	RotateX(0.5f);
+	RotateZ(deltaTime);
 }
 
 void Entity::Draw(ID3D11DeviceContext * context, DirectX::XMFLOAT4X4 view, DirectX::XMFLOAT4X4 projection)
 {
+	XMMATRIX trans = XMMatrixTranslation(position.x, position.y, position.z);
+	XMMATRIX rotX = XMMatrixRotationX(rotation.x);
+	XMMATRIX rotY = XMMatrixRotationY(rotation.y);
+	XMMATRIX rotZ = XMMatrixRotationZ(rotation.z);
+	XMMATRIX scale = XMMatrixScaling(this->scale.x, this->scale.y, this->scale.z);
+	XMMATRIX w = scale * rotZ * rotY * rotX * trans;
+	XMStoreFloat4x4(&worldMatrix, XMMatrixTranspose(w));
 	this->material->SetShader(worldMatrix, view, projection);
 	this->mesh->Draw(context);
 }

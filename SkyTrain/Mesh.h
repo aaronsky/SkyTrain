@@ -5,11 +5,6 @@
 class Mesh
 {
 public:
-	Mesh* TRIANGLE;
-	Mesh* QUAD;
-	Mesh* PENTAGON;
-	void InitGeometry(ID3D11Device* device);
-
 	Mesh(Vertex* vertices, int vertexCount, unsigned int* indices, int indexCount, ID3D11Device* device);
 	~Mesh();
 	ID3D11Buffer* GetVertexBuffer();

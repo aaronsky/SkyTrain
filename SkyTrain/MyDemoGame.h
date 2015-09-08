@@ -1,5 +1,7 @@
 #pragma once
-
+#include "Triangle.h"
+#include "Rect.h"
+#include "Pentagon.h"
 #include "Entity.h"
 
 // Include run-time memory checking in debug builds, so 
