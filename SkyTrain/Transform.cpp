@@ -5,7 +5,8 @@ using namespace DirectX;
 Transform::Transform(XMFLOAT3 _position, XMFLOAT3 _rotation, XMFLOAT3 _scale)
 {
 	this->position = _position;
-	this->rotation = _rotation;
+	this->rotationAxis = _rotation;
+	this->rotationDegrees = 0.0f;
 	this->scale = _scale;
 	XMMATRIX W = XMMatrixIdentity();
 	XMStoreFloat4x4(&worldMatrix, XMMatrixTranspose(W));
@@ -27,11 +28,10 @@ XMFLOAT4X4 Transform::GetWorldMatrix(bool regenIfNeeded)
 {
 	if (regenIfNeeded && isDirty) {
 		XMMATRIX trans = XMMatrixTranslation(position.x, position.y, position.z);
-		XMMATRIX rotX = XMMatrixRotationX(rotation.x);
-		XMMATRIX rotY = XMMatrixRotationY(rotation.y);
-		XMMATRIX rotZ = XMMatrixRotationZ(rotation.z);
+		XMVECTOR axis = XMLoadFloat3(&rotationAxis);
+		XMMATRIX rot = XMMatrixRotationAxis(axis, rotationDegrees);
 		XMMATRIX scale = XMMatrixScaling(this->scale.x, this->scale.y, this->scale.z);
-		XMMATRIX w = scale * rotZ * rotY * rotX * trans;
+		XMMATRIX w = scale * rot * trans;
 		XMStoreFloat4x4(&worldMatrix, XMMatrixTranspose(w));
 		isDirty = false;
 	}
@@ -43,9 +43,9 @@ XMFLOAT3 Transform::GetPosition()
 	return this->position;
 }
 
-XMFLOAT3 Transform::GetRotation()
+XMFLOAT3 Transform::GetRotationAxis()
 {
-	return this->rotation;
+	return this->rotationAxis;
 }
 
 XMFLOAT3 Transform::GetScale()
@@ -67,9 +67,9 @@ void Transform::SetPosition(XMFLOAT3 newPosition)
 	isDirty = true;
 }
 
-void Transform::SetRotation(XMFLOAT3 newRotation)
+void Transform::SetRotationAxis(XMFLOAT3 newRotation)
 {
-	this->rotation = newRotation;
+	this->rotationAxis = newRotation;
 	isDirty = true;
 }
 
@@ -101,21 +101,31 @@ void Transform::TranslateZ(float z)
 #pragma endregion Translate
 
 #pragma region Rotate
-void Transform::RotateX(float x)
+void Transform::Rotate(float degrees, XMFLOAT3 axis)
 {
-	this->rotation.x += x;
+	SetRotationAxis(axis);
+	rotationDegrees += degrees;
 	isDirty = true;
 }
 
-void Transform::RotateY(float y)
+void Transform::RotateX(float degrees, float axisX)
 {
-	this->rotation.y += y;
+	this->rotationAxis.x = axisX;
+	rotationDegrees += degrees;
 	isDirty = true;
 }
 
-void Transform::RotateZ(float z)
+void Transform::RotateY(float degrees, float axisY)
 {
-	this->rotation.z += z;
+	this->rotationAxis.y = axisY;
+	rotationDegrees += degrees;
+	isDirty = true;
+}
+
+void Transform::RotateZ(float degrees, float axisZ)
+{
+	this->rotationAxis.z = axisZ;
+	rotationDegrees += degrees;
 	isDirty = true;
 }
 #pragma endregion Rotate

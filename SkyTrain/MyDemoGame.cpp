@@ -156,7 +156,7 @@ void MyDemoGame::UpdateScene(float deltaTime, float totalTime)
 		Quit();
 
 	entity1->GetTransform()->ScaleY(-1.0f * deltaTime);
-	entity2->GetTransform()->RotateZ(deltaTime);
+	entity2->GetTransform()->RotateZ(deltaTime, 1.0f);
 	entity3->GetTransform()->TranslateZ(deltaTime);
 
 	entity1->Update(deltaTime);
