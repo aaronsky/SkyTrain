@@ -105,9 +105,9 @@ bool MyDemoGame::Init()
 	// geometric primitives we'll be using and how to interpret them
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	entity1 = new Entity(new Triangle(device), XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(1, 1, 1), device, deviceContext);
-	entity2 = new Entity(new Rect(device), XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(1, 1, 1), device, deviceContext);
-	entity3 = new Entity(new Pentagon(device), XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(1, 1, 1), device, deviceContext);
+	entity1 = new Entity(new Triangle(device), Transform::Origin(), device, deviceContext);
+	entity2 = new Entity(new Rect(device), Transform::Origin(), device, deviceContext);
+	entity3 = new Entity(new Pentagon(device), Transform::Origin(), device, deviceContext);
 
 	XMVECTOR pos = XMVectorSet(0, 0, -5, 0);
 	XMVECTOR dir = XMVectorSet(0, 0, 1, 0);
@@ -154,6 +154,11 @@ void MyDemoGame::UpdateScene(float deltaTime, float totalTime)
 	// Quit if the escape key is pressed
 	if (GetAsyncKeyState(VK_ESCAPE))
 		Quit();
+
+	entity1->GetTransform()->ScaleY(-1.0f * deltaTime);
+	entity2->GetTransform()->RotateZ(deltaTime);
+	entity3->GetTransform()->TranslateZ(deltaTime);
+
 	entity1->Update(deltaTime);
 	entity2->Update(deltaTime);
 	entity3->Update(deltaTime);

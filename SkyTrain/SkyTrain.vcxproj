@@ -84,6 +84,7 @@
     <ClCompile Include="Pentagon.cpp" />
     <ClCompile Include="Rect.cpp" />
     <ClCompile Include="SimpleShader.cpp" />
+    <ClCompile Include="Transform.cpp" />
     <ClCompile Include="Triangle.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -96,6 +97,7 @@
     <ClInclude Include="Pentagon.h" />
     <ClInclude Include="Rect.h" />
     <ClInclude Include="SimpleShader.h" />
+    <ClInclude Include="Transform.h" />
     <ClInclude Include="Triangle.h" />
     <ClInclude Include="Vertex.h" />
   </ItemGroup>
