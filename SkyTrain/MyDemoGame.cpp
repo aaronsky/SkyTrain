@@ -105,8 +105,8 @@ bool MyDemoGame::Init()
 	// geometric primitives we'll be using and how to interpret them
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	entity1 = new Entity(new Triangle(device), Transform::Origin(), device, deviceContext);
-	entity2 = new Entity(new Rect(device), Transform::Origin(), device, deviceContext);
+	entity1 = new Entity(new Triangle(device), new Transform(-2.0f, 1.0f, 0.0f), device, deviceContext);
+	entity2 = new Entity(new Rect(device), new Transform(3.0f, -2.0f, 0.0f), device, deviceContext);
 	entity3 = new Entity(new Pentagon(device), Transform::Origin(), device, deviceContext);
 
 	XMVECTOR pos = XMVectorSet(0, 0, -5, 0);
@@ -155,9 +155,8 @@ void MyDemoGame::UpdateScene(float deltaTime, float totalTime)
 	if (GetAsyncKeyState(VK_ESCAPE))
 		Quit();
 
-	entity1->GetTransform()->ScaleY(-1.0f * deltaTime);
-	entity2->GetTransform()->RotateZ(deltaTime, 1.0f);
-	entity3->GetTransform()->TranslateZ(deltaTime);
+	entity2->GetTransform()->RotateX(deltaTime);
+	entity3->GetTransform()->RotateZ(deltaTime);
 
 	entity1->Update(deltaTime);
 	entity2->Update(deltaTime);

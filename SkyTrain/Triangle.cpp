@@ -10,9 +10,9 @@ Mesh Triangle::CreateMesh(ID3D11Device* device)
 
 	Vertex triangleVertices[] =
 	{
-		{ XMFLOAT3(+1.0f, -1.0f, +0.0f), red },
-		{ XMFLOAT3(+2.0f, +0.0f, +0.0f), blue },
-		{ XMFLOAT3(+1.5f, -1.5f, +0.0f), green },
+		{ XMFLOAT3(+0.0f, 0.5f, +0.0f), red },
+		{ XMFLOAT3(+0.5f, -0.5f, +0.0f), blue },
+		{ XMFLOAT3(-0.5f, -0.5f, +0.0f), green },
 	};
 
 	unsigned int indices[] = { 0, 1, 2 };

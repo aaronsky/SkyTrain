@@ -2,17 +2,29 @@
 
 using namespace DirectX;
 
+Transform::Transform(float pos_x, float pos_y, float pos_z, float rot_x, float rot_y, float rot_z, float sca_x, float sca_y, float sca_z)
+{
+	Init(
+		XMFLOAT3(pos_x, pos_y, pos_z),
+		XMFLOAT3(rot_x, rot_y, rot_z),
+		XMFLOAT3(sca_x, sca_y, sca_z)
+		);
+}
+
 Transform::Transform(XMFLOAT3 _position, XMFLOAT3 _rotation, XMFLOAT3 _scale)
 {
+	Init(_position, _rotation, _scale);
+}
+
+void Transform::Init(XMFLOAT3 _position, XMFLOAT3 _rotation, XMFLOAT3 _scale)
+{
 	this->position = _position;
-	this->rotationAxis = _rotation;
-	this->rotationDegrees = 0.0f;
+	this->rotation = _rotation;
 	this->scale = _scale;
 	XMMATRIX W = XMMatrixIdentity();
 	XMStoreFloat4x4(&worldMatrix, XMMatrixTranspose(W));
 	isDirty = false;
 }
-
 
 Transform::~Transform()
 {
@@ -20,32 +32,50 @@ Transform::~Transform()
 
 Transform* Transform::Origin()
 {
-	return new Transform(XMFLOAT3(0, 0, 0), XMFLOAT3(0, 0, 0), XMFLOAT3(1, 1, 1));
+	return new Transform(0, 0, 0);
 }
 
 #pragma region Getters
 XMFLOAT4X4 Transform::GetWorldMatrix(bool regenIfNeeded)
 {
 	if (regenIfNeeded && isDirty) {
-		XMMATRIX trans = XMMatrixTranslation(position.x, position.y, position.z);
-		XMVECTOR axis = XMLoadFloat3(&rotationAxis);
-		XMMATRIX rot = XMMatrixRotationAxis(axis, rotationDegrees);
-		XMMATRIX scale = XMMatrixScaling(this->scale.x, this->scale.y, this->scale.z);
-		XMMATRIX w = scale * rot * trans;
+		XMVECTOR posVec = XMLoadFloat3(&position);
+		XMVECTOR rotVec = XMLoadFloat3(&rotation);
+		XMVECTOR scaleVec = XMLoadFloat3(&scale);
+
+		XMMATRIX w = XMMatrixScalingFromVector(scaleVec) * XMMatrixRotationRollPitchYawFromVector(rotVec) * XMMatrixTranslationFromVector(posVec);
+		//XMMATRIX w = XMMatrixScaling(scale.x, scale.y, scale.z) * XMMatrixRotationX(rotation.x) * XMMatrixRotationY(rotation.y) * XMMatrixRotationZ(rotation.z) * XMMatrixTranslation(position.x, position.y, position.z);
 		XMStoreFloat4x4(&worldMatrix, XMMatrixTranspose(w));
 		isDirty = false;
 	}
 	return this->worldMatrix;
 }
 
+#pragma region Getters - Position
 XMFLOAT3 Transform::GetPosition()
 {
 	return this->position;
 }
 
-XMFLOAT3 Transform::GetRotationAxis()
+float Transform::X()
 {
-	return this->rotationAxis;
+	return this->position.x;
+}
+
+float Transform::Y()
+{
+	return this->position.y;
+}
+
+float Transform::Z()
+{
+	return this->position.z;
+}
+#pragma endregion Getters - Position
+
+XMFLOAT3 Transform::GetRotation()
+{
+	return this->rotation;
 }
 
 XMFLOAT3 Transform::GetScale()
@@ -61,15 +91,35 @@ void Transform::SetWorldMatrix(XMFLOAT4X4 newWorld)
 	isDirty = true;
 }
 
+#pragma region Setters - Position
 void Transform::SetPosition(XMFLOAT3 newPosition)
 {
 	this->position = newPosition;
 	isDirty = true;
 }
 
-void Transform::SetRotationAxis(XMFLOAT3 newRotation)
+void Transform::SetX(float x)
 {
-	this->rotationAxis = newRotation;
+	this->position.x = x;
+	isDirty = true;
+}
+
+void Transform::SetY(float y)
+{
+	this->position.y = y;
+	isDirty = true;
+}
+
+void Transform::SetZ(float z)
+{
+	this->position.z = z;
+	isDirty = true;
+}
+#pragma endregion Position
+
+void Transform::SetRotation(XMFLOAT3 newRotation)
+{
+	this->rotation = newRotation;
 	isDirty = true;
 }
 
@@ -101,31 +151,21 @@ void Transform::TranslateZ(float z)
 #pragma endregion Translate
 
 #pragma region Rotate
-void Transform::Rotate(float degrees, XMFLOAT3 axis)
+void Transform::RotateX(float angle)
 {
-	SetRotationAxis(axis);
-	rotationDegrees += degrees;
+	this->rotation.x += angle;
 	isDirty = true;
 }
 
-void Transform::RotateX(float degrees, float axisX)
+void Transform::RotateY(float angle)
 {
-	this->rotationAxis.x = axisX;
-	rotationDegrees += degrees;
+	this->rotation.y += angle;
 	isDirty = true;
 }
 
-void Transform::RotateY(float degrees, float axisY)
+void Transform::RotateZ(float angle)
 {
-	this->rotationAxis.y = axisY;
-	rotationDegrees += degrees;
-	isDirty = true;
-}
-
-void Transform::RotateZ(float degrees, float axisZ)
-{
-	this->rotationAxis.z = axisZ;
-	rotationDegrees += degrees;
+	this->rotation.z += angle;
 	isDirty = true;
 }
 #pragma endregion Rotate

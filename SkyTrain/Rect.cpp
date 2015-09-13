@@ -10,10 +10,10 @@ Mesh Rect::CreateMesh(ID3D11Device* device)
 
 	Vertex squareVertices[] =
 	{
-		{ XMFLOAT3(-6.0f, -4.0f, +10.0f), green },
-		{ XMFLOAT3(-4.0f, -4.0f, +10.0f), blue },
-		{ XMFLOAT3(-4.0f, -6.0f, +10.0f), green },
-		{ XMFLOAT3(-6.0f, -6.0f, +10.0f), blue }
+		{ XMFLOAT3(-0.5f, 0.5f, +0.0f), green },
+		{ XMFLOAT3(0.5f, 0.5f, +0.0f), blue },
+		{ XMFLOAT3(0.5f, -0.5f, +0.0f), green },
+		{ XMFLOAT3(-0.5f, -0.5f, +0.0f), blue }
 	};
 
 	unsigned int squareIndices[] = { 0, 1, 2, 0, 2, 3 };
