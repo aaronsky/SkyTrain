@@ -2,12 +2,10 @@
 
 using namespace DirectX;
 
-Camera::Camera(float aspectRatio)
+Camera::Camera(float aspectRatio) : IGameObject(std::shared_ptr<Transform>(new Transform(0, 0, -5, 0, 0, 1)))
 {
 	this->aspectRatio = aspectRatio;
-	transform = std::shared_ptr<Transform>(new Transform(0, 0, -5, 0, 0, 1));
-	up = XMVectorSet(0, 1, 0, 0);
-	isDirty = true;
+	worldUp = up = XMVectorSet(0, 1, 0, 0);
 	UpdateViewMatrix();
 	GetProjectionMatrix(true);
 }
@@ -16,9 +14,9 @@ Camera::~Camera()
 {
 }
 
-XMFLOAT4X4 Camera::GetViewMatrix(bool regenIfNeeded)
+XMFLOAT4X4 Camera::GetViewMatrix(bool regen)
 {
-	if (regenIfNeeded && isDirty) {
+	if (regen) {
 		UpdateViewMatrix();
 	}
 	return view;
@@ -39,7 +37,6 @@ void Camera::Update(float xOffset, float yOffset)
 	yOffset *= mouseSensitivity;
 	transform->RotateX(yOffset);
 	transform->RotateY(xOffset);
-	isDirty = true;
 	UpdateViewMatrix();
 }
 
@@ -51,7 +48,6 @@ void Camera::UpdateViewMatrix()
 	XMVECTOR direction = XMVector3Rotate(up, rotQuaternion);
 	XMMATRIX V = XMMatrixLookToLH(posVec, direction, up);
 	XMStoreFloat4x4(&view, XMMatrixTranspose(V));
-	isDirty = false;
 }
 
 void Camera::UpdateProjectionMatrix()

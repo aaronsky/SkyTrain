@@ -206,3 +206,8 @@ void Transform::ScaleZ(float z)
 	isDirty = true;
 }
 #pragma endregion Scale
+
+
+void Transform::Update(float dT)
+{
+}

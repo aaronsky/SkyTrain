@@ -34,7 +34,7 @@ public:
 
 private:
 	Camera* camera;
-	std::vector<std::shared_ptr<Entity>> entities;
+	std::vector<std::shared_ptr<IGameObject>> gameObjects;
 	// Keeps track of the old mouse position.  Useful for 
 	// determining how far the mouse moved in a single frame.
 	POINT prevMousePos;

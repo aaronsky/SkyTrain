@@ -103,9 +103,18 @@ bool MyDemoGame::Init()
 	// geometric primitives we'll be using and how to interpret them
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	entities.push_back(std::shared_ptr<Entity>(new Entity(new Triangle(device), std::shared_ptr<Transform>(new Transform(-2.0f, 1.0f, 2.0f)), device, deviceContext)));
-	entities.push_back(std::shared_ptr<Entity>(new Entity(new Rect(device), std::shared_ptr<Transform>(new Transform(2.0f, -1.0f, -1.0f)), device, deviceContext)));
-	entities.push_back(std::shared_ptr<Entity>(new Entity(new Pentagon(device), Transform::Origin(), device, deviceContext)));
+	gameObjects.push_back(std::shared_ptr<IGameObject>(new Entity(std::shared_ptr<Transform>(new Transform(-2.0f, 1.0f, 2.0f)),
+		new Triangle(device),
+		device, 
+		deviceContext)));
+	gameObjects.push_back(std::shared_ptr<IGameObject>(new Entity(std::shared_ptr<Transform>(new Transform(2.0f, -1.0f, -1.0f)), 
+		new Rect(device), 
+		device, 
+		deviceContext)));
+	gameObjects.push_back(std::shared_ptr<IGameObject>(new Entity(Transform::Origin(), 
+		new Pentagon(device), 
+		device, 
+		deviceContext)));
 
 	camera = new Camera(aspectRatio);
 	// Successfully initialized
@@ -138,11 +147,12 @@ void MyDemoGame::UpdateScene(float deltaTime, float totalTime)
 	// Quit if the escape key is pressed
 	if (GetAsyncKeyState(VK_ESCAPE))
 		Quit();
+	if (GetAsyncKeyState('A') & 0x8000);
 
-	entities.at(1)->GetTransform()->RotateX(deltaTime);
-	entities.at(2)->GetTransform()->RotateZ(deltaTime);
+	gameObjects.at(1)->GetTransform()->RotateX(deltaTime);
+	gameObjects.at(2)->GetTransform()->RotateZ(deltaTime);
 
-	for (auto& entity : entities) {
+	for (auto& entity : gameObjects) {
 		entity->Update(deltaTime);
 	}
 }
@@ -165,8 +175,10 @@ void MyDemoGame::DrawScene(float deltaTime, float totalTime)
 		1.0f,
 		0);
 
-	for (auto& entity : entities) {
-		entity->Draw(deviceContext, camera->GetViewMatrix(), camera->GetProjectionMatrix());
+	for (auto& gameObject : gameObjects) {
+		auto entity = std::static_pointer_cast<Entity>(gameObject);
+		if (entity != NULL)
+			entity->Draw(deviceContext, camera->GetViewMatrix(), camera->GetProjectionMatrix());
 	}
 
 	// Present the buffer

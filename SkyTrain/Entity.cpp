@@ -2,26 +2,20 @@
 
 using namespace DirectX;
 
-Entity::Entity(Mesh * _mesh, std::shared_ptr<Transform> _transform, ID3D11Device* _device, ID3D11DeviceContext* _deviceContext)
+Entity::Entity(std::shared_ptr<Transform> _transform, 
+	Mesh * _mesh, 
+	ID3D11Device* _device, 
+	ID3D11DeviceContext* _deviceContext)
+	: IGameObject(_transform)
 {
 	this->mesh = _mesh;
 	this->material = new Material(_device, _deviceContext, L"VertexShader.cso", L"PixelShader.cso");
-	this->transform = _transform;
 }
 
 Entity::~Entity()
 {
 	delete mesh;
 	delete material;
-}
-
-std::shared_ptr<Transform> Entity::GetTransform()
-{
-	return transform;
-}
-
-void Entity::Update(float deltaTime)
-{
 }
 
 void Entity::Draw(ID3D11DeviceContext * context, DirectX::XMFLOAT4X4 view, DirectX::XMFLOAT4X4 projection)
