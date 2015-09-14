@@ -1,4 +1,5 @@
 #pragma once
+#include <memory>
 #include "Vertex.h"
 class Transform
 {
@@ -7,7 +8,7 @@ public:
 	Transform(DirectX::XMFLOAT3 _position, DirectX::XMFLOAT3 _rotation, DirectX::XMFLOAT3 _scale);
 	~Transform();
 
-	static Transform* Origin();
+	static std::shared_ptr<Transform> Origin();
 
 	DirectX::XMFLOAT4X4 GetWorldMatrix(bool regenIfNeeded = true);
 	DirectX::XMFLOAT3 GetPosition();
@@ -19,11 +20,14 @@ public:
 
 	void SetWorldMatrix(DirectX::XMFLOAT4X4 newWorld);
 	void SetPosition(DirectX::XMFLOAT3 newPosition);
+	void SetPositionFromVector(DirectX::XMVECTOR newPosition);
 	void SetX(float x);
 	void SetY(float y);
 	void SetZ(float z);
 	void SetRotation(DirectX::XMFLOAT3 newRotation);
+	void SetRotationFromVector(DirectX::XMVECTOR newRotation);
 	void SetScale(DirectX::XMFLOAT3 newScale);
+	void SetScaleFromVector(DirectX::XMVECTOR newScale);
 
 	void TranslateX(float x);
 	void TranslateY(float y);

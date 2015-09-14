@@ -2,7 +2,7 @@
 
 using namespace DirectX;
 
-Entity::Entity(Mesh * _mesh, Transform* _transform, ID3D11Device* _device, ID3D11DeviceContext* _deviceContext)
+Entity::Entity(Mesh * _mesh, std::shared_ptr<Transform> _transform, ID3D11Device* _device, ID3D11DeviceContext* _deviceContext)
 {
 	this->mesh = _mesh;
 	this->material = new Material(_device, _deviceContext, L"VertexShader.cso", L"PixelShader.cso");
@@ -13,10 +13,9 @@ Entity::~Entity()
 {
 	delete mesh;
 	delete material;
-	delete transform;
 }
 
-Transform * Entity::GetTransform()
+std::shared_ptr<Transform> Entity::GetTransform()
 {
 	return transform;
 }

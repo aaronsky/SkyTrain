@@ -81,9 +81,7 @@ MyDemoGame::MyDemoGame(HINSTANCE hInstance)
 // --------------------------------------------------------
 MyDemoGame::~MyDemoGame()
 {
-	delete entity1;
-	delete entity2;
-	delete entity3;
+	delete camera;
 }
 
 #pragma endregion
@@ -100,24 +98,16 @@ bool MyDemoGame::Init()
 	// initialize DirectX, etc.
 	if (!DirectXGameCore::Init())
 		return false;
-	
+
 	// Tell the input assembler stage of the pipeline what kind of
 	// geometric primitives we'll be using and how to interpret them
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-	entity1 = new Entity(new Triangle(device), new Transform(-2.0f, 1.0f, 0.0f), device, deviceContext);
-	entity2 = new Entity(new Rect(device), new Transform(3.0f, -2.0f, 0.0f), device, deviceContext);
-	entity3 = new Entity(new Pentagon(device), Transform::Origin(), device, deviceContext);
+	entities.push_back(std::shared_ptr<Entity>(new Entity(new Triangle(device), std::shared_ptr<Transform>(new Transform(-2.0f, 1.0f, 2.0f)), device, deviceContext)));
+	entities.push_back(std::shared_ptr<Entity>(new Entity(new Rect(device), std::shared_ptr<Transform>(new Transform(2.0f, -1.0f, -1.0f)), device, deviceContext)));
+	entities.push_back(std::shared_ptr<Entity>(new Entity(new Pentagon(device), Transform::Origin(), device, deviceContext)));
 
-	XMVECTOR pos = XMVectorSet(0, 0, -5, 0);
-	XMVECTOR dir = XMVectorSet(0, 0, 1, 0);
-	XMVECTOR up = XMVectorSet(0, 1, 0, 0);
-	XMMATRIX V = XMMatrixLookToLH(pos, dir, up);
-	XMStoreFloat4x4(&viewMatrix, XMMatrixTranspose(V));
-
-	XMMATRIX P = XMMatrixPerspectiveFovLH(0.25f * 3.1415926535f, aspectRatio, 0.1f, 100.0f);
-	XMStoreFloat4x4(&projectionMatrix, XMMatrixTranspose(P));
-
+	camera = new Camera(aspectRatio);
 	// Successfully initialized
 	return true;
 }
@@ -133,14 +123,8 @@ void MyDemoGame::OnResize()
 {
 	// Handle base-level DX resize stuff
 	DirectXGameCore::OnResize();
-
-	// Update our projection matrix since the window size changed
-	XMMATRIX P = XMMatrixPerspectiveFovLH(
-		0.25f * 3.1415926535f,	// Field of View Angle
-		aspectRatio,		  	// Aspect ratio
-		0.1f,				  	// Near clip plane distance
-		100.0f);			  	// Far clip plane distance
-	XMStoreFloat4x4(&projectionMatrix, XMMatrixTranspose(P)); // Transpose for HLSL!
+	if (camera != NULL)
+		camera->UpdateProjectionMatrix();
 }
 #pragma endregion
 
@@ -155,12 +139,12 @@ void MyDemoGame::UpdateScene(float deltaTime, float totalTime)
 	if (GetAsyncKeyState(VK_ESCAPE))
 		Quit();
 
-	entity2->GetTransform()->RotateX(deltaTime);
-	entity3->GetTransform()->RotateZ(deltaTime);
+	entities.at(1)->GetTransform()->RotateX(deltaTime);
+	entities.at(2)->GetTransform()->RotateZ(deltaTime);
 
-	entity1->Update(deltaTime);
-	entity2->Update(deltaTime);
-	entity3->Update(deltaTime);
+	for (auto& entity : entities) {
+		entity->Update(deltaTime);
+	}
 }
 
 // --------------------------------------------------------
@@ -180,10 +164,10 @@ void MyDemoGame::DrawScene(float deltaTime, float totalTime)
 		D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
 		1.0f,
 		0);
-	
-	entity1->Draw(deviceContext, viewMatrix, projectionMatrix);
-	entity2->Draw(deviceContext, viewMatrix, projectionMatrix);
-	entity3->Draw(deviceContext, viewMatrix, projectionMatrix);
+
+	for (auto& entity : entities) {
+		entity->Draw(deviceContext, camera->GetViewMatrix(), camera->GetProjectionMatrix());
+	}
 
 	// Present the buffer
 	//  - Puts the image we're drawing into the window so the user can see it
@@ -236,8 +220,19 @@ void MyDemoGame::OnMouseUp(WPARAM btnState, int x, int y)
 // --------------------------------------------------------
 void MyDemoGame::OnMouseMove(WPARAM btnState, int x, int y)
 {
-	// Save the previous mouse position, so we have it for the future
+	if (firstMouse)
+	{
+		prevMousePos.x = x;
+		prevMousePos.y = y;
+		firstMouse = false;
+	}
+
+	auto xOffset = x - prevMousePos.x;
+	auto yOffset = prevMousePos.y - y;
+
 	prevMousePos.x = x;
 	prevMousePos.y = y;
+	
+	camera->Update(xOffset, yOffset);
 }
 #pragma endregion

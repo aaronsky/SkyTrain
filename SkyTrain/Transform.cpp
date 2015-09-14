@@ -30,9 +30,9 @@ Transform::~Transform()
 {
 }
 
-Transform* Transform::Origin()
+std::shared_ptr<Transform> Transform::Origin()
 {
-	return new Transform(0, 0, 0);
+	return std::shared_ptr<Transform>(new Transform(0, 0, 0));
 }
 
 #pragma region Getters
@@ -44,7 +44,7 @@ XMFLOAT4X4 Transform::GetWorldMatrix(bool regenIfNeeded)
 		XMVECTOR scaleVec = XMLoadFloat3(&scale);
 
 		XMMATRIX w = XMMatrixScalingFromVector(scaleVec) * XMMatrixRotationRollPitchYawFromVector(rotVec) * XMMatrixTranslationFromVector(posVec);
-		//XMMATRIX w = XMMatrixScaling(scale.x, scale.y, scale.z) * XMMatrixRotationX(rotation.x) * XMMatrixRotationY(rotation.y) * XMMatrixRotationZ(rotation.z) * XMMatrixTranslation(position.x, position.y, position.z);
+
 		XMStoreFloat4x4(&worldMatrix, XMMatrixTranspose(w));
 		isDirty = false;
 	}
@@ -98,6 +98,12 @@ void Transform::SetPosition(XMFLOAT3 newPosition)
 	isDirty = true;
 }
 
+void Transform::SetPositionFromVector(DirectX::XMVECTOR newPosition)
+{
+	XMStoreFloat3(&position, newPosition);
+	isDirty = true;
+}
+
 void Transform::SetX(float x)
 {
 	this->position.x = x;
@@ -123,9 +129,20 @@ void Transform::SetRotation(XMFLOAT3 newRotation)
 	isDirty = true;
 }
 
+void Transform::SetRotationFromVector(DirectX::XMVECTOR newRotation)
+{
+	XMStoreFloat3(&rotation, newRotation);
+	isDirty = true;
+}
+
 void Transform::SetScale(XMFLOAT3 newScale)
 {
 	this->scale = newScale;
+	isDirty = true;
+}
+void Transform::SetScaleFromVector(DirectX::XMVECTOR newScale)
+{
+	XMStoreFloat3(&scale, newScale);
 	isDirty = true;
 }
 #pragma endregion Setters

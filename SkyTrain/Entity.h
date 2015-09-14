@@ -6,10 +6,10 @@
 class Entity
 {
 public:
-	Entity(Mesh* _mesh, Transform* _transform, ID3D11Device* _device, ID3D11DeviceContext* _deviceContext);
+	Entity(Mesh* _mesh, std::shared_ptr<Transform> _transform, ID3D11Device* _device, ID3D11DeviceContext* _deviceContext);
 	~Entity();
 
-	Transform* GetTransform();
+	std::shared_ptr<Transform> GetTransform();
 
 	virtual void Update(float deltaTime);
 
@@ -17,6 +17,6 @@ public:
 private:
 	Mesh* mesh;
 	Material* material;
-	Transform* transform;
+	std::shared_ptr<Transform> transform;
 };
 
