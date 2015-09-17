@@ -1,5 +1,16 @@
 #pragma once
 #include "IGameObject.h"
+
+typedef enum
+{
+	Left,
+	Right,
+	Up,
+	Down,
+	Forward,
+	Backward
+} CameraDirections;
+
 class Camera : IGameObject
 {
 public:
@@ -7,14 +18,11 @@ public:
 	~Camera();
 	DirectX::XMFLOAT4X4 GetViewMatrix(bool regen = true);
 	DirectX::XMFLOAT4X4 GetProjectionMatrix(bool regen = false);
+	void Move(CameraDirections direction, float dT);
 	void Update(float xOffset, float yOffset);
-	void UpdateVectors();
 	void UpdateViewMatrix();
 	void UpdateProjectionMatrix();
 protected:
-	DirectX::XMVECTOR up;
-	DirectX::XMVECTOR worldUp;
-	DirectX::XMVECTOR right;
 	DirectX::XMFLOAT4X4 view;
 	DirectX::XMFLOAT4X4 projection;
 	float aspectRatio;

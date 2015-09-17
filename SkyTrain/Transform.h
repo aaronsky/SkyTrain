@@ -22,6 +22,10 @@ public:
 #pragma endregion Getters - Position
 	DirectX::XMFLOAT3 GetRotation();
 	DirectX::XMFLOAT3 GetScale();
+
+	DirectX::XMFLOAT3 GetRight();
+	DirectX::XMFLOAT3 GetUp();
+	DirectX::XMFLOAT3 GetFront();
 #pragma endregion Getters
 
 #pragma region Setters
@@ -43,6 +47,10 @@ public:
 	void TranslateX(float x);
 	void TranslateY(float y);
 	void TranslateZ(float z);
+
+	void MoveX(float x, float dT);
+	void MoveY(float y, float dT);
+	void MoveZ(float z, float dT);
 #pragma endregion Translate
 
 #pragma region Rotate
@@ -58,11 +66,18 @@ public:
 #pragma endregion Scale
 
 	void Update(float dT);
+	void UpdateVectors();
 protected:
 	DirectX::XMFLOAT4X4 worldMatrix;
 	DirectX::XMFLOAT3 position;
 	DirectX::XMFLOAT3 rotation;
 	DirectX::XMFLOAT3 scale;
+
+	DirectX::XMFLOAT3 right;
+	DirectX::XMFLOAT3 up;
+	DirectX::XMFLOAT3 front;
+	DirectX::XMVECTOR worldUp;
+
 	bool isDirty;
 	void Init(DirectX::XMFLOAT3 _position, DirectX::XMFLOAT3 _rotation, DirectX::XMFLOAT3 _scale);
 };

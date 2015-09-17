@@ -147,7 +147,18 @@ void MyDemoGame::UpdateScene(float deltaTime, float totalTime)
 	// Quit if the escape key is pressed
 	if (GetAsyncKeyState(VK_ESCAPE))
 		Quit();
-	if (GetAsyncKeyState('A') & 0x8000);
+	if (GetAsyncKeyState('A') & 0x8000)
+		camera->Move(CameraDirections::Left, deltaTime);
+	else if (GetAsyncKeyState('W') & 0x8000)
+		camera->Move(CameraDirections::Forward, deltaTime);
+	else if (GetAsyncKeyState('S') & 0x8000)
+		camera->Move(CameraDirections::Backward, deltaTime);
+	else if (GetAsyncKeyState('D') & 0x8000)
+		camera->Move(CameraDirections::Right, deltaTime);
+	else if (GetAsyncKeyState(VK_CONTROL))
+		camera->Move(CameraDirections::Down, deltaTime);
+	else if (GetAsyncKeyState(VK_SPACE))
+		camera->Move(CameraDirections::Up, deltaTime);
 
 	gameObjects.at(1)->GetTransform()->RotateX(deltaTime);
 	gameObjects.at(2)->GetTransform()->RotateZ(deltaTime);
