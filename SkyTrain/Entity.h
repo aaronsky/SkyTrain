@@ -8,6 +8,7 @@ class Entity :
 public:
 	Entity(std::shared_ptr<Transform> _transform, Mesh * _mesh, ID3D11Device* _device, ID3D11DeviceContext* _deviceContext);
 	~Entity();
+	Material* GetMaterial();
 	void Draw(ID3D11DeviceContext* context, DirectX::XMFLOAT4X4 view, DirectX::XMFLOAT4X4 projection);
 private:
 	Mesh* mesh;

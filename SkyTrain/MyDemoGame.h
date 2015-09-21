@@ -1,8 +1,10 @@
 #pragma once
+#include "Light.h"
 #include "Camera.h"
 #include "Triangle.h"
 #include "Rect.h"
 #include "Pentagon.h"
+#include "Model.h"
 #include "Entity.h"
 
 // Include run-time memory checking in debug builds, so 
@@ -35,6 +37,8 @@ public:
 private:
 	Camera* camera;
 	std::vector<std::shared_ptr<IGameObject>> gameObjects;
+	DirectionalLight light1;
+	DirectionalLight light2;
 	// Keeps track of the old mouse position.  Useful for 
 	// determining how far the mouse moved in a single frame.
 	POINT prevMousePos;

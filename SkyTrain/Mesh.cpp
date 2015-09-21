@@ -2,8 +2,11 @@
 
 using namespace DirectX;
 
-Mesh::Mesh(Vertex * vertices, int vertexCount, unsigned int * indices, int indexCount, ID3D11Device * device)
+Mesh::Mesh()
 {
+}
+
+void Mesh::Init(Vertex * vertices, int vertexCount, unsigned int * indices, int indexCount, ID3D11Device * device) {
 	D3D11_BUFFER_DESC vbd;
 	vbd.Usage = D3D11_USAGE_IMMUTABLE;
 	vbd.ByteWidth = sizeof(Vertex) * vertexCount;

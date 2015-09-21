@@ -27,7 +27,6 @@
 // For the DirectX Math library
 using namespace DirectX;
 
-
 #pragma region Win32 Entry Point (WinMain)
 // --------------------------------------------------------
 // Win32 Entry Point - Where your program starts
@@ -102,19 +101,41 @@ bool MyDemoGame::Init()
 	// Tell the input assembler stage of the pipeline what kind of
 	// geometric primitives we'll be using and how to interpret them
 	deviceContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	
+	XMFLOAT3 positions[] = {
+		XMFLOAT3(0.0f, 0.0f, 0.0f),
+		XMFLOAT3(2.0f, 5.0f, -15.0f),
+		XMFLOAT3(-1.5f, -2.2f, -2.5f),
+		XMFLOAT3(-3.8f, -2.0f, -12.3f),
+		XMFLOAT3(2.4f, -0.4f, -3.5f),
+		XMFLOAT3(-1.7f, 3.0f, -7.5f)
+	};
 
-	gameObjects.push_back(std::shared_ptr<IGameObject>(new Entity(std::shared_ptr<Transform>(new Transform(-2.0f, 1.0f, 2.0f)),
-		new Triangle(device),
-		device, 
-		deviceContext)));
-	gameObjects.push_back(std::shared_ptr<IGameObject>(new Entity(std::shared_ptr<Transform>(new Transform(2.0f, -1.0f, -1.0f)), 
-		new Rect(device), 
-		device, 
-		deviceContext)));
-	gameObjects.push_back(std::shared_ptr<IGameObject>(new Entity(Transform::Origin(), 
-		new Pentagon(device), 
-		device, 
-		deviceContext)));
+	std::string modelNames[] = {
+		"cube.obj",
+		"cone.obj",
+		"cylinder.obj",
+		"helix.obj",
+		"sphere.obj",
+		"torus.obj"
+	};
+
+	for (size_t i = 0; i < 6; i++)
+	{
+		XMFLOAT3 position = positions[i];
+		gameObjects.push_back(std::shared_ptr<IGameObject>(new Entity(std::shared_ptr<Transform>(new Transform(position.x, position.y, position.z)),
+			new Model(modelNames[i], device),
+			device,
+			deviceContext)));
+	}
+
+	light1.AmbientColor = XMFLOAT4(0.1, 0.1, 0.1, 1.0);
+	light1.DiffuseColor = XMFLOAT4(1, 0, 0, 1);
+	light1.Direction = XMFLOAT3(1, -1, 0);
+	
+	light2.AmbientColor = XMFLOAT4(0.1, 0.1, 0.1, 1.0);
+	light2.DiffuseColor = XMFLOAT4(0, 0, 1, 1);
+	light2.Direction = XMFLOAT3(1, -1, 0);
 
 	camera = new Camera(aspectRatio);
 	// Successfully initialized
@@ -160,10 +181,10 @@ void MyDemoGame::UpdateScene(float deltaTime, float totalTime)
 	else if (GetAsyncKeyState(VK_SPACE))
 		camera->Move(CameraDirections::Up, deltaTime);
 
-	gameObjects.at(1)->GetTransform()->RotateX(deltaTime);
-	gameObjects.at(2)->GetTransform()->RotateZ(deltaTime);
-
 	for (auto& entity : gameObjects) {
+		entity->GetTransform()->RotateX(deltaTime);
+		entity->GetTransform()->RotateY(deltaTime);
+		entity->GetTransform()->RotateZ(deltaTime);
 		entity->Update(deltaTime);
 	}
 }
@@ -188,8 +209,11 @@ void MyDemoGame::DrawScene(float deltaTime, float totalTime)
 
 	for (auto& gameObject : gameObjects) {
 		auto entity = std::static_pointer_cast<Entity>(gameObject);
-		if (entity != NULL)
+		if (entity != NULL) {
+			entity->GetMaterial()->GetPixelShader()->SetData("light1", &light1, sizeof(DirectionalLight));
+			entity->GetMaterial()->GetPixelShader()->SetData("light2", &light2, sizeof(DirectionalLight));
 			entity->Draw(deviceContext, camera->GetViewMatrix(), camera->GetProjectionMatrix());
+		}
 	}
 
 	// Present the buffer

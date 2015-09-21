@@ -18,6 +18,11 @@ Entity::~Entity()
 	delete material;
 }
 
+Material * Entity::GetMaterial()
+{
+	return material;
+}
+
 void Entity::Draw(ID3D11DeviceContext * context, DirectX::XMFLOAT4X4 view, DirectX::XMFLOAT4X4 projection)
 {
 	XMFLOAT4X4 wm = transform->GetWorldMatrix();
