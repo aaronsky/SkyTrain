@@ -128,16 +128,15 @@ bool MyDemoGame::Init()
 			device,
 			deviceContext)));
 	}
-
-	light1.AmbientColor = XMFLOAT4(0.1, 0.1, 0.1, 1.0);
-	light1.DiffuseColor = XMFLOAT4(1, 0, 0, 1);
-	light1.Direction = XMFLOAT3(1, -1, 0);
 	
-	light2.AmbientColor = XMFLOAT4(0.1, 0.1, 0.1, 1.0);
-	light2.DiffuseColor = XMFLOAT4(0, 0, 1, 1);
-	light2.Direction = XMFLOAT3(1, -1, 0);
+	directionalLight.AmbientColor = XMFLOAT4(0.3f, 0.3f, 0.3f, 1);
+	directionalLight.Direction = XMFLOAT3(1, 1, 1);
+	
+	pointLight.AmbientColor = XMFLOAT4(1, 1, 1, 1);
+	pointLight.Position = XMFLOAT3(3, 3, -3);
 
-	camera = new Camera(aspectRatio);
+	camera = new Camera(0, 0, -5);
+	camera->UpdateProjectionMatrix(aspectRatio);
 	// Successfully initialized
 	return true;
 }
@@ -154,7 +153,7 @@ void MyDemoGame::OnResize()
 	// Handle base-level DX resize stuff
 	DirectXGameCore::OnResize();
 	if (camera != NULL)
-		camera->UpdateProjectionMatrix();
+		camera->UpdateProjectionMatrix(aspectRatio);
 }
 #pragma endregion
 
@@ -168,18 +167,7 @@ void MyDemoGame::UpdateScene(float deltaTime, float totalTime)
 	// Quit if the escape key is pressed
 	if (GetAsyncKeyState(VK_ESCAPE))
 		Quit();
-	if (GetAsyncKeyState('A') & 0x8000)
-		camera->Move(CameraDirections::Left, deltaTime);
-	else if (GetAsyncKeyState('W') & 0x8000)
-		camera->Move(CameraDirections::Forward, deltaTime);
-	else if (GetAsyncKeyState('S') & 0x8000)
-		camera->Move(CameraDirections::Backward, deltaTime);
-	else if (GetAsyncKeyState('D') & 0x8000)
-		camera->Move(CameraDirections::Right, deltaTime);
-	else if (GetAsyncKeyState(VK_CONTROL))
-		camera->Move(CameraDirections::Down, deltaTime);
-	else if (GetAsyncKeyState(VK_SPACE))
-		camera->Move(CameraDirections::Up, deltaTime);
+	camera->Update(deltaTime);
 
 	for (auto& entity : gameObjects) {
 		entity->GetTransform()->RotateX(deltaTime);
@@ -210,9 +198,11 @@ void MyDemoGame::DrawScene(float deltaTime, float totalTime)
 	for (auto& gameObject : gameObjects) {
 		auto entity = std::static_pointer_cast<Entity>(gameObject);
 		if (entity != NULL) {
-			entity->GetMaterial()->GetPixelShader()->SetData("light1", &light1, sizeof(DirectionalLight));
-			entity->GetMaterial()->GetPixelShader()->SetData("light2", &light2, sizeof(DirectionalLight));
-			entity->Draw(deviceContext, camera->GetViewMatrix(), camera->GetProjectionMatrix());
+			entity->GetMaterial()->GetPixelShader()->SetData("dLight", &directionalLight, sizeof(DirectionalLight));
+			entity->GetMaterial()->GetPixelShader()->SetData("pLight", &pointLight, sizeof(PointLight));
+			entity->GetMaterial()->GetPixelShader()->SetFloat3("CameraPosition", camera->GetPosition());
+			entity->GetMaterial()->GetPixelShader()->SetFloat("time", totalTime);
+			entity->Draw(deviceContext, camera->GetView(), camera->GetProjection());
 		}
 	}
 
@@ -267,19 +257,16 @@ void MyDemoGame::OnMouseUp(WPARAM btnState, int x, int y)
 // --------------------------------------------------------
 void MyDemoGame::OnMouseMove(WPARAM btnState, int x, int y)
 {
-	if (firstMouse)
+	// Calc differences
+	if (btnState & 0x0001)
 	{
-		prevMousePos.x = x;
-		prevMousePos.y = y;
-		firstMouse = false;
+		float xDiff = (x - prevMousePos.x) * 0.005f;
+		float yDiff = (y - prevMousePos.y) * 0.005f;
+		camera->Rotate(yDiff, xDiff);
 	}
 
-	auto xOffset = x - prevMousePos.x;
-	auto yOffset = prevMousePos.y - y;
-
+	// Save the previous mouse position, so we have it for the future
 	prevMousePos.x = x;
 	prevMousePos.y = y;
-	
-	camera->Update(xOffset, yOffset);
 }
 #pragma endregion

@@ -1,86 +1,111 @@
 #include "Camera.h"
+#include <Windows.h>
 
 using namespace DirectX;
 
-Camera::Camera(float aspectRatio) : IGameObject(std::shared_ptr<Transform>(new Transform(0, 0, -5, 0, 0, 1)))
+// Creates a camera at the specified position
+Camera::Camera(float x, float y, float z) : IGameObject(std::shared_ptr<Transform>(new Transform(x, y, z)))
 {
-	this->aspectRatio = aspectRatio;
-	UpdateViewMatrix();
-	GetProjectionMatrix(true);
+	startPosition = XMFLOAT3(x, y, z);
+	this->GetTransform()->SetPosition(startPosition);
+	XMStoreFloat4(&rotation, XMQuaternionIdentity());
+	xRotation = 0;
+	yRotation = 0;
+
+	XMStoreFloat4x4(&viewMatrix, XMMatrixIdentity());
+	XMStoreFloat4x4(&projMatrix, XMMatrixIdentity());
 }
 
+// Nothing to really do
 Camera::~Camera()
+{ }
+
+
+// Moves the camera relative to its orientation
+void Camera::MoveRelative(float x, float y, float z)
 {
+	// Rotate the desired movement vector
+	XMVECTOR dir = XMVector3Rotate(XMVectorSet(x, y, z, 0), XMLoadFloat4(&rotation));
+
+	// Move in that direction
+	XMStoreFloat3(&(this->GetTransform()->GetPosition()), XMLoadFloat3(&(this->GetTransform()->GetPosition())) + dir);
 }
 
-XMFLOAT4X4 Camera::GetViewMatrix(bool regen)
+// Moves the camera in world space (not local space)
+void Camera::MoveAbsolute(float x, float y, float z)
 {
-	if (regen) {
-		UpdateViewMatrix();
-	}
-	return view;
+	// Simple add, no need to load/store
+	this->GetTransform()->TranslateX(x);
+	this->GetTransform()->TranslateY(y);
+	this->GetTransform()->TranslateZ(z);
 }
 
-XMFLOAT4X4 Camera::GetProjectionMatrix(bool regen)
+// Rotate on the X and/or Y axis
+void Camera::Rotate(float x, float y)
 {
-	if (regen) {
-		UpdateProjectionMatrix();
-	}
-	return projection;
+	// Adjust the current rotation
+	xRotation += x;
+	yRotation += y;
+
+	// Clamp the x between PI/2 and -PI/2
+	xRotation = max(min(xRotation, XM_PIDIV2), -XM_PIDIV2);
+
+	// Recreate the quaternion
+	XMStoreFloat4(&rotation, XMQuaternionRotationRollPitchYaw(xRotation, yRotation, 0));
 }
 
-void Camera::Move(CameraDirections direction, float dT)
+// Camera's update, which looks for key presses
+void Camera::Update(float dt)
 {
-	float velocity = 5.0f * dT;
-	switch (direction)
+	// Current speed
+	float speed = dt * 3;
+
+	// Speed up when shift is pressed
+	if (GetAsyncKeyState(VK_SHIFT)) { speed *= 5; }
+
+	// Movement
+	if (GetAsyncKeyState('W') & 0x8000) { MoveRelative(0, 0, speed); }
+	if (GetAsyncKeyState('S') & 0x8000) { MoveRelative(0, 0, -speed); }
+	if (GetAsyncKeyState('A') & 0x8000) { MoveRelative(-speed, 0, 0); }
+	if (GetAsyncKeyState('D') & 0x8000) { MoveRelative(speed, 0, 0); }
+	if (GetAsyncKeyState('X') & 0x8000) { MoveAbsolute(0, -speed, 0); }
+	if (GetAsyncKeyState(' ') & 0x8000) { MoveAbsolute(0, speed, 0); }
+
+	// Check for reset
+	if (GetAsyncKeyState('R') & 0x8000)
 	{
-	case Left:
-		transform->MoveX(-1.0f * velocity, dT);
-		break;
-	case Right:
-		transform->MoveX(velocity, dT);
-		break;
-	case Up:
-		transform->MoveY(-1.0f * velocity, dT);
-		break;
-	case Down:
-		transform->MoveY(velocity, dT);
-		break;
-	case Forward:
-		transform->MoveY(velocity, dT);
-		break;
-	case Backward:
-		transform->MoveY(-1.0f * velocity, dT);
-		break;
-	default:
-		break;
+		this->GetTransform()->SetPosition(startPosition);
+		xRotation = 0;
+		xRotation = 0;
+		XMStoreFloat4(&rotation, XMQuaternionIdentity());
 	}
-}
 
-void Camera::Update(float xOffset, float yOffset)
-{
-	float mouseSensitivity = 0.0125f;
-	xOffset *= mouseSensitivity;
-	yOffset *= mouseSensitivity;
-	transform->RotateX(yOffset);
-	transform->RotateY(xOffset);
-	transform->UpdateVectors();
+	// Update the view every frame - could be optimized
 	UpdateViewMatrix();
 }
 
+// Creates a new view matrix based on current position and orientation
 void Camera::UpdateViewMatrix()
 {
-	XMVECTOR posVec = XMLoadFloat3(&(transform->GetPosition()));
-	XMVECTOR rotVec = XMLoadFloat3(&(transform->GetRotation()));
-	XMVECTOR upVec = XMLoadFloat3(&(transform->GetUp()));
-	XMVECTOR rotQuaternion = XMQuaternionRotationRollPitchYawFromVector(rotVec);
-	XMVECTOR direction = XMVector3Rotate(upVec, rotQuaternion);
-	XMMATRIX V = XMMatrixLookToLH(posVec, direction, upVec);
-	XMStoreFloat4x4(&view, XMMatrixTranspose(V));
+	// Rotate the standard "forward" matrix by our rotation
+	// This gives us our "look direction"
+	XMVECTOR dir = XMVector3Rotate(XMVectorSet(0, 0, 1, 0), XMLoadFloat4(&rotation));
+
+	XMMATRIX view = XMMatrixLookToLH(
+		XMLoadFloat3(&(this->GetTransform()->GetPosition())),
+		dir,
+		XMVectorSet(0, 1, 0, 0));
+
+	XMStoreFloat4x4(&viewMatrix, XMMatrixTranspose(view));
 }
 
-void Camera::UpdateProjectionMatrix()
+// Updates the projection matrix
+void Camera::UpdateProjectionMatrix(float aspectRatio)
 {
-	XMMATRIX P = XMMatrixPerspectiveFovLH(0.25f * 3.1415926535f, aspectRatio, 0.1f, 100.0f);
-	XMStoreFloat4x4(&projection, XMMatrixTranspose(P));
+	XMMATRIX P = XMMatrixPerspectiveFovLH(
+		0.25f * 3.1415926535f,		// Field of View Angle
+		aspectRatio,				// Aspect ratio
+		0.1f,						// Near clip plane distance
+		100.0f);					// Far clip plane distance
+	XMStoreFloat4x4(&projMatrix, XMMatrixTranspose(P)); // Transpose for HLSL!
 }

@@ -43,6 +43,8 @@ struct VertexToPixel
 	//  v    v                v
 	float4 position		: SV_POSITION;	// XYZW position (System Value Position)
 	float3 normal		: NORMAL;
+	float3 worldPos     : TEXCOORD0;
+	float2 uv           : TEXCOORD1;
 };
 
 // --------------------------------------------------------
@@ -54,26 +56,21 @@ struct VertexToPixel
 // --------------------------------------------------------
 VertexToPixel main( VertexShaderInput input )
 {
-	// Set up output struct
+	// Set up output
 	VertexToPixel output;
-	
-	// The vertex's position (input.position) must be converted to world space,
-	// then camera space (relative to our 3D camera), then to proper homogenous 
-	// screen-space coordinates.  This is taken care of by our world, view and
-	// projection matrices.  
-	//
-	// First we multiply them together to get a single matrix which represents
-	// all of those transformations (world to view to projection space)
-	matrix worldViewProj = mul(mul(world, view), projection);
 
-	// Then we convert our 3-component position vector to a 4-component vector
-	// and multiply it by our final 4x4 matrix.
-	//
-	// The result is essentially the position (XY) of the vertex on our 2D 
-	// screen and the distance (Z) from the camera (the "depth" of the pixel)
+	// Calculate output position
+	matrix worldViewProj = mul(mul(world, view), projection);
 	output.position = mul(float4(input.position, 1.0f), worldViewProj);
+
+	// Take into account rotation (but not translation)
+	// Most of the  world matrix
 	output.normal = mul(input.normal, (float3x3)world);
-	// Whatever we return will make its way through the pipeline to the
-	// next programmable stage we're using (the pixel shader for now)
+
+	// The world space position of the vertex
+	output.worldPos = mul(float4(input.position, 1), world).xyz;
+
+	// Pass the UV's through
+	output.uv = input.uv;
 	return output;
 }

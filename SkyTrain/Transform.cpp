@@ -21,7 +21,6 @@ void Transform::Init(XMFLOAT3 _position, XMFLOAT3 _rotation, XMFLOAT3 _scale)
 	this->position = _position;
 	this->rotation = _rotation;
 	this->scale = _scale;
-	worldUp = XMVectorSet(0, 1, 0, 0);
 	XMMATRIX W = XMMatrixIdentity();
 	XMStoreFloat4x4(&worldMatrix, XMMatrixTranspose(W));
 	isDirty = false;
@@ -34,23 +33,6 @@ Transform::~Transform()
 std::shared_ptr<Transform> Transform::Origin()
 {
 	return std::shared_ptr<Transform>(new Transform(0, 0, 0));
-}
-
-void Transform::UpdateVectors()
-{
-	front.x = cos(XMConvertToRadians(rotation.z)) * cos(XMConvertToRadians(rotation.y));
-	front.y = sin(XMConvertToRadians(rotation.y));
-	front.z = sin(XMConvertToRadians(rotation.z)) * cos(XMConvertToRadians(rotation.y));
-	XMVECTOR frontVec = XMLoadFloat3(&front);
-	frontVec = XMVector3Normalize(frontVec);
-	XMVECTOR rightVec = XMLoadFloat3(&right);
-	XMVECTOR upVec = XMLoadFloat3(&up);
-	rightVec = XMVector3Normalize(XMVector3Cross(frontVec, worldUp));
-	upVec = XMVector3Normalize(XMVector3Cross(frontVec, rightVec));
-	
-	XMStoreFloat3(&front, frontVec);
-	XMStoreFloat3(&right, rightVec);
-	XMStoreFloat3(&up, upVec);
 }
 
 #pragma region Getters
@@ -100,21 +82,6 @@ XMFLOAT3 Transform::GetScale()
 {
 	return this->scale;
 }
-
-XMFLOAT3 Transform::GetRight()
-{
-	return this->right;
-}
-
-XMFLOAT3 Transform::GetUp()
-{
-	return this->up;
-}
-
-XMFLOAT3 Transform::GetFront()
-{
-	return this->front;
-}
 #pragma endregion Getters
 
 #pragma region Setters
@@ -153,40 +120,6 @@ void Transform::SetZ(float z)
 {
 	this->position.z = z;
 	isDirty = true;
-}
-
-
-void Transform::MoveX(float x, float dT)
-{
-	XMVECTOR posVec = XMLoadFloat3(&position);
-	XMVECTOR rightVec = XMLoadFloat3(&right);
-	if (x > 0)
-		posVec = XMVectorAdd(posVec, XMVectorScale(rightVec, x));
-	else if (x < 0)
-		posVec = XMVectorSubtract(posVec, XMVectorScale(rightVec, x));
-	XMStoreFloat3(&position, posVec);
-}
-
-void Transform::MoveY(float y, float dT)
-{
-	XMVECTOR posVec = XMLoadFloat3(&position);
-	XMVECTOR upVec = XMLoadFloat3(&up);
-	if (y > 0)
-		posVec = XMVectorAdd(posVec, XMVectorScale(upVec, y));
-	else if (y < 0)
-		posVec = XMVectorSubtract(posVec, XMVectorScale(upVec, y));
-	XMStoreFloat3(&position, posVec);
-}
-
-void Transform::MoveZ(float z, float dT)
-{
-	XMVECTOR posVec = XMLoadFloat3(&position);
-	XMVECTOR frontVec = XMLoadFloat3(&front);
-	if (z > 0)
-		posVec = XMVectorAdd(posVec, XMVectorScale(frontVec, z));
-	else if (z < 0)
-		posVec = XMVectorSubtract(posVec, XMVectorScale(frontVec, z));
-	XMStoreFloat3(&position, posVec);
 }
 #pragma endregion Position
 

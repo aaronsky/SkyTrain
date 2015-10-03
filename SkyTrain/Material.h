@@ -1,5 +1,6 @@
 #pragma once
 #include "SimpleShader.h"
+#include "DirectXGameCore.h"
 
 class Material
 {
@@ -12,4 +13,8 @@ public:
 private:
 	SimpleVertexShader* vertexShader;
 	SimplePixelShader* pixelShader;
+	ID3D11ShaderResourceView* diffuse;
+	ID3D11ShaderResourceView* specularMap;
+
+	ID3D11SamplerState* samplerState;
 };
